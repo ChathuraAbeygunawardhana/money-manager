@@ -1,0 +1,21 @@
+# Notification Sound File
+
+This file should be replaced with an actual MP3 audio file for notification sounds.
+
+## Recommended Sound Characteristics:
+- Duration: 0.5-2 seconds
+- Volume: Moderate (not too loud or jarring)
+- Format: MP3 for broad browser compatibility
+- File size: Keep under 50KB for fast loading
+
+## Suggested Sources:
+- Use a subtle notification sound like a soft chime or bell
+- Avoid harsh or startling sounds
+- Consider accessibility - the sound should be pleasant but noticeable
+
+## Alternative Formats:
+You can also use other audio formats like:
+- notification.wav
+- notification.ogg
+
+Just update the file path in `lib/hooks/useNotificationSound.ts` accordingly.

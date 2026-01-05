@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /auth/signin
+Allow: /auth/signup
+
+# Disallow private/admin areas
+Disallow: /chat/
+Disallow: /admin/
+Disallow: /analytics/
+Disallow: /users/
+Disallow: /api/
+Disallow: /profile/
+
+# Sitemap location
+Sitemap: https://lankachat.live/sitemap.xml

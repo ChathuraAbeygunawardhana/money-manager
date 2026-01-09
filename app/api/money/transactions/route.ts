@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.user_id = ?
     `;
-    const args = [DEFAULT_USER_ID];
+    const args: (string | number)[] = [DEFAULT_USER_ID];
 
     if (accountId) {
       sql += " AND t.account_id = ?";

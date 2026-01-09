@@ -33,6 +33,7 @@ export default function SettingsPage() {
     weight: null as number | null,
     bio: null as string | null,
     orientation: null as string | null,
+    profile_picture: null as string | null,
   });
   const [profilePicture, setProfilePicture] = useState<string>('');
   const [isUpdatingPicture, setIsUpdatingPicture] = useState(false);

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       FROM financial_goals 
       WHERE user_id = ?
     `;
-    const args = [session.user.id];
+    const args: (string | number)[] = [session.user.id];
 
     if (category) {
       sql += " AND category = ?";

@@ -17,6 +17,7 @@ interface ProfileInfoData {
   weight: number | null;
   bio: string | null;
   orientation: string | null;
+  profile_picture: string | null;
 }
 
 interface UserProfile {

@@ -6,7 +6,7 @@ import Button from "./atoms/Button";
 import Card from "./atoms/Card";
 
 export default function InitializationGuide() {
-  const { initializeMoney, loading, error } = useMoneyInit();
+  const mutation = useMoneyInit();
   const [moneyInitialized, setMoneyInitialized] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -39,7 +39,7 @@ export default function InitializationGuide() {
 
   const handleInitializeMoney = async () => {
     try {
-      await initializeMoney();
+      await mutation.mutateAsync();
       setMoneyInitialized(true);
     } catch (error) {
       console.error("Failed to initialize money manager:", error);
@@ -76,17 +76,17 @@ export default function InitializationGuide() {
             <p className="text-yellow-700 mb-4">
               Welcome! Let's set up your money manager with default categories and your first account.
             </p>
-            {error && (
+            {mutation.error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-red-600">{mutation.error.message}</p>
               </div>
             )}
             <Button 
               variant="primary" 
               onClick={handleInitializeMoney}
-              disabled={loading}
+              disabled={mutation.isPending}
             >
-              {loading ? "Setting up..." : "Initialize Money Manager"}
+              {mutation.isPending ? "Setting up..." : "Initialize Money Manager"}
             </Button>
             <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
               <p className="text-sm text-yellow-800">

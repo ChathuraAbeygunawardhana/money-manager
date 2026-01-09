@@ -29,7 +29,7 @@ export interface Transaction {
   type: "income" | "expense" | "transfer";
   amount: number;
   description: string;
-  date: number;
+  date: number; // Unix timestamp as stored in database
   tags: string[];
   notes?: string;
   is_recurring: number;
@@ -42,6 +42,20 @@ export interface Transaction {
   category_name?: string;
   category_color?: string;
   category_icon?: string;
+}
+
+export interface TransactionUpdateData {
+  account_id?: string;
+  category_id?: string;
+  type?: "income" | "expense" | "transfer";
+  amount?: number;
+  description?: string;
+  date?: string; // String format for API
+  tags?: string[];
+  notes?: string;
+  is_recurring?: boolean;
+  recurring_frequency?: string;
+  recurring_end_date?: string;
 }
 
 export interface Budget {
@@ -317,7 +331,7 @@ export function useUpdateTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Transaction> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TransactionUpdateData }) => {
       const response = await fetch(`/api/money/transactions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -377,5 +391,45 @@ export function useMonthlySpending(months: number = 12) {
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 15, // 15 minutes cache
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useFilteredReports(filters: {
+  startDate: string;
+  endDate: string;
+  account: string;
+  category: string;
+  transactionType: string;
+  minAmount: string;
+  maxAmount: string;
+}) {
+  // Determine if filters are active
+  const hasActiveFilters = filters.category !== 'all' || 
+                          filters.account !== 'all' || 
+                          filters.transactionType !== 'all';
+
+  return useQuery({
+    queryKey: ["money", "reports", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      if (filters.startDate) params.append("start_date", filters.startDate);
+      if (filters.endDate) params.append("end_date", filters.endDate);
+      if (filters.account && filters.account !== "all") params.append("account_id", filters.account);
+      if (filters.category && filters.category !== "all") params.append("category_id", filters.category);
+      if (filters.transactionType && filters.transactionType !== "all") params.append("transaction_type", filters.transactionType);
+      if (filters.minAmount) params.append("min_amount", filters.minAmount);
+      if (filters.maxAmount) params.append("max_amount", filters.maxAmount);
+
+      const response = await fetch(`/api/money/reports?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch filtered reports");
+      return response.json();
+    },
+    enabled: hasActiveFilters, // Only run query when filters are active
+    staleTime: 1000 * 60 * 5, // 5 minutes - longer stale time for reports
+    gcTime: 1000 * 60 * 15, // 15 minutes cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch on mount if data exists
+    refetchOnReconnect: false, // Don't refetch on reconnect
   });
 }

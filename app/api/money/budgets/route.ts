@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         AND t.user_id = b.user_id
       WHERE b.user_id = ?
     `;
-    const args = [session.user.id];
+    const args: (string | number)[] = [session.user.id];
 
     if (period && ["weekly", "monthly", "yearly"].includes(period)) {
       sql += " AND b.period = ?";

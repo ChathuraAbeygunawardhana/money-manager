@@ -228,12 +228,13 @@ export default function TransactionsPage() {
                         </div>
                       </div>
                       <div className="text-right">
+                      <div className="flex items-center justify-between">
                         <p className={`text-lg font-bold ${
                           transaction.type === "income" ? 'text-green-600' : 'text-red-600'
                         }`}>
                           {formatAmount(transaction.amount, transaction.type)}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 ml-4">
                           <button 
                             onClick={() => handleEdit(transaction)}
                             className="text-gray-600 hover:text-gray-900 cursor-pointer" 
@@ -253,6 +254,7 @@ export default function TransactionsPage() {
                             </svg>
                           </button>
                         </div>
+                      </div>
                       </div>
                     </div>
                   </div>

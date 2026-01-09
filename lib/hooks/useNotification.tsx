@@ -48,7 +48,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                   ? "bg-green-600 text-white"
                   : notification.type === "error"
                   ? "bg-red-600 text-white"
-                  : "bg-blue-600 text-white"
+                  : "bg-gray-600 text-white"
               }`}
               style={{
                 animation: "slideDown 0.3s ease-out",

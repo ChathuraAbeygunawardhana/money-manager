@@ -46,7 +46,7 @@ export async function sendVerificationEmail(email: string, token: string) {
         <p style="color: #6b7280; font-size: 14px;">
           If the button doesn't work, you can copy and paste this link into your browser:
         </p>
-        <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">
+        <p style="color: #6b7280; word-break: break-all; font-size: 14px;">
           ${verificationUrl}
         </p>
         <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
@@ -99,7 +99,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
         <p style="color: #6b7280; font-size: 14px;">
           If the button doesn't work, you can copy and paste this link into your browser:
         </p>
-        <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">
+        <p style="color: #6b7280; word-break: break-all; font-size: 14px;">
           ${resetUrl}
         </p>
         <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">

@@ -1,24 +1,24 @@
 // Application configuration
 export const APP_CONFIG = {
-  name: "Lankachat",
-  description: "Join real-time conversations and connect with people worldwide. Create communities, chat instantly, and experience seamless communication in our modern, secure chat platform.",
-  tagline: "Real-time Chat Application",
-  shortDescription: "Modern real-time chat platform for instant messaging and community building",
+  name: "MoneyTracker",
+  description: "Take control of your finances with our comprehensive money management platform. Track expenses, manage budgets, analyze spending patterns, and achieve your financial goals.",
+  tagline: "Personal Finance Management",
+  shortDescription: "Smart money management platform for tracking expenses and budgets",
   keywords: [
-    "chat application",
-    "real-time messaging",
-    "online chat rooms",
-    "instant messaging",
-    "community chat",
-    "secure messaging",
-    "group chat",
-    "live chat",
-    "chat platform",
-    "messaging app"
+    "money management",
+    "expense tracking",
+    "budget planner",
+    "financial planning",
+    "personal finance",
+    "spending tracker",
+    "financial goals",
+    "money tracker",
+    "budget app",
+    "expense manager"
   ],
-  url: "https://lankachat.live",
+  url: "https://moneytracker.app",
   image: "/og-image.png", 
   email: {
-    from: "noreply@lankachat.com",
+    from: "noreply@moneytracker.app",
   },
 } as const;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useProfile } from "@/lib/hooks/useProfile";
 import ProfilePicture from "../ProfilePicture";
 
 export interface UserInfoProps {
@@ -12,31 +12,13 @@ export interface UserInfoProps {
 
 export default function UserInfo({ name, email, showAvatar = true }: UserInfoProps) {
   const { data: session } = useSession();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch('/api/profile');
-          if (response.ok) {
-            const userData = await response.json();
-            setProfilePicture(userData.profile_picture);
-          }
-        } catch (error) {
-          console.error('Failed to fetch user profile:', error);
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, [session?.user?.id]);
+  const { data: profile } = useProfile();
 
   return (
     <div className="flex items-center gap-3 px-4 py-3">
       {showAvatar && (
         <ProfilePicture 
-          src={profilePicture} 
+          src={profile?.profile_picture} 
           name={name} 
           size="sm"
         />

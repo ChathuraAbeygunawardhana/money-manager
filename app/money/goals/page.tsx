@@ -47,7 +47,7 @@ export default function GoalsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Target</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">$0</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">Rs.0</p>
                 </div>
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                   <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +61,7 @@ export default function GoalsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Saved</p>
-                  <p className="text-2xl font-bold text-green-600 mt-2">$0</p>
+                  <p className="text-2xl font-bold text-green-600 mt-2">Rs.0</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                   <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

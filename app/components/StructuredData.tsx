@@ -12,7 +12,7 @@ export default function StructuredData() {
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "USD"
+      "priceCurrency": "LKR"
     },
     "featureList": [
       "Real-time messaging",

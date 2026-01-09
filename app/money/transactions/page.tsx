@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTransactions, useAccounts, useCategories } from "@/lib/hooks/useMoney";
+import { useTransactions, useAccounts, useCategories, useDeleteTransaction } from "@/lib/hooks/useMoney";
 import Card from "../../components/atoms/Card";
 import Button from "../../components/atoms/Button";
 import Input from "../../components/atoms/Input";
@@ -18,9 +18,11 @@ export default function TransactionsPage() {
     description: "",
   });
 
-  const { transactions, loading, error, refetch, deleteTransaction } = useTransactions();
-  const { accounts } = useAccounts();
-  const { categories } = useCategories();
+  const { data: transactions = [], isLoading: loading, error, refetch } = useTransactions();
+  const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
+  
+  const deleteTransactionMutation = useDeleteTransaction();
 
   // Create a combined list of all categories for filtering
   const allCategories = ["all", ...Array.from(new Set(categories.map(c => c.name)))];
@@ -39,7 +41,7 @@ export default function TransactionsPage() {
 
   const formatAmount = (amount: number, type: string) => {
     const formatted = Math.abs(amount).toFixed(2);
-    return type === "income" ? `+$${formatted}` : `-$${formatted}`;
+    return type === "income" ? `+Rs.${formatted}` : `-Rs.${formatted}`;
   };
 
   const handleEdit = (transaction: any) => {
@@ -57,8 +59,7 @@ export default function TransactionsPage() {
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteTransaction(deleteConfirm.transactionId);
-      refetch();
+      await deleteTransactionMutation.mutateAsync(deleteConfirm.transactionId);
       setDeleteConfirm({ show: false, transactionId: "", description: "" });
     } catch (error) {
       console.error("Failed to delete transaction:", error);
@@ -90,8 +91,8 @@ export default function TransactionsPage() {
         </div>
       ) : error ? (
         <div className="text-center py-8">
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={refetch}>Try Again</Button>
+          <p className="text-red-600 mb-4">{error.message}</p>
+          <Button onClick={() => refetch()}>Try Again</Button>
         </div>
       ) : (
         <>
@@ -101,7 +102,7 @@ export default function TransactionsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Income</p>
-                  <p className="text-2xl font-bold text-green-600 mt-2">+${totalIncome.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-green-600 mt-2">+Rs.{totalIncome.toFixed(2)}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                   <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +116,7 @@ export default function TransactionsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Expenses</p>
-                  <p className="text-2xl font-bold text-red-600 mt-2">-${totalExpenses.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-red-600 mt-2">-Rs.{totalExpenses.toFixed(2)}</p>
                 </div>
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +133,7 @@ export default function TransactionsPage() {
                   <p className={`text-2xl font-bold mt-2 ${
                     (totalIncome - totalExpenses) >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    ${(totalIncome - totalExpenses).toFixed(2)}
+                    Rs.{(totalIncome - totalExpenses).toFixed(2)}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
@@ -270,7 +271,6 @@ export default function TransactionsPage() {
           setEditingTransaction(null);
         }}
         onSuccess={() => {
-          refetch();
           setIsModalOpen(false);
           setEditingTransaction(null);
         }}

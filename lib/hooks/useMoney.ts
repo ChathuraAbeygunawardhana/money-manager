@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Types
 export interface Account {
@@ -112,196 +112,138 @@ export interface DashboardData {
 
 // Custom hooks
 export function useAccounts() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchAccounts = async () => {
-    try {
-      setLoading(true);
+  return useQuery({
+    queryKey: ["money", "accounts"],
+    queryFn: async () => {
       const response = await fetch("/api/money/accounts");
       if (!response.ok) throw new Error("Failed to fetch accounts");
-      const data = await response.json();
-      setAccounts(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json() as Promise<Account[]>;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - accounts don't change frequently
+    gcTime: 1000 * 60 * 30, // 30 minutes cache
+    refetchOnWindowFocus: false,
+  });
+}
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
+export function useCreateAccount() {
+  const queryClient = useQueryClient();
 
-  const createAccount = async (accountData: Omit<Account, "id" | "created_at" | "updated_at" | "is_active">) => {
-    try {
+  return useMutation({
+    mutationFn: async (accountData: Omit<Account, "id" | "created_at" | "updated_at" | "is_active">) => {
       const response = await fetch("/api/money/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(accountData),
       });
       if (!response.ok) throw new Error("Failed to create account");
-      await fetchAccounts();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account");
-      return false;
-    }
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+    },
+  });
+}
 
-  const updateAccount = async (id: string, updates: Partial<Account>) => {
-    try {
+export function useUpdateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Account> }) => {
       const response = await fetch(`/api/money/accounts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
       if (!response.ok) throw new Error("Failed to update account");
-      await fetchAccounts();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update account");
-      return false;
-    }
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "transactions"] });
+    },
+  });
+}
 
-  const deleteAccount = async (id: string) => {
-    try {
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
       const response = await fetch(`/api/money/accounts/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete account");
-      await fetchAccounts();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete account");
-      return false;
-    }
-  };
-
-  return {
-    accounts,
-    loading,
-    error,
-    refetch: fetchAccounts,
-    createAccount,
-    updateAccount,
-    deleteAccount,
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "transactions"] });
+    },
+  });
 }
 
 export function useCategories(type?: "income" | "expense") {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
+  return useQuery({
+    queryKey: ["money", "categories", type],
+    queryFn: async () => {
       const url = type ? `/api/money/categories?type=${type}` : "/api/money/categories";
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch categories");
-      const data = await response.json();
-      setCategories(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json() as Promise<Category[]>;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes - categories change less frequently
+    gcTime: 1000 * 60 * 30, // 30 minutes cache
+    refetchOnWindowFocus: false,
+  });
+}
 
-  useEffect(() => {
-    fetchCategories();
-  }, [type]);
+export function useCreateCategory() {
+  const queryClient = useQueryClient();
 
-  const createCategory = async (categoryData: Omit<Category, "id" | "created_at" | "is_active">) => {
-    try {
+  return useMutation({
+    mutationFn: async (categoryData: Omit<Category, "id" | "created_at" | "is_active">) => {
       const response = await fetch("/api/money/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(categoryData),
       });
       if (!response.ok) throw new Error("Failed to create category");
-      await fetchCategories();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create category");
-      return false;
-    }
-  };
-
-  return {
-    categories,
-    loading,
-    error,
-    refetch: fetchCategories,
-    createCategory,
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "categories"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+    },
+  });
 }
 
 export function useDashboard(periodDays: number = 30) {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchDashboard = async () => {
-    try {
-      setLoading(true);
+  return useQuery({
+    queryKey: ["money", "dashboard", periodDays],
+    queryFn: async () => {
       const response = await fetch(`/api/money/dashboard?period=${periodDays}`);
       if (!response.ok) throw new Error("Failed to fetch dashboard data");
-      const dashboardData = await response.json();
-      setData(dashboardData);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboard();
-  }, [periodDays]);
-
-  return {
-    data,
-    loading,
-    error,
-    refetch: fetchDashboard,
-  };
+      return response.json() as Promise<DashboardData>;
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes - dashboard data should be relatively fresh
+    gcTime: 1000 * 60 * 10, // 10 minutes cache
+    refetchOnWindowFocus: false,
+  });
 }
 
 export function useMoneyInit() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const initializeMoney = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  return useMutation({
+    mutationFn: async () => {
       const response = await fetch("/api/money/init", {
         method: "POST",
       });
       if (!response.ok) throw new Error("Failed to initialize money manager");
-      const result = await response.json();
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to initialize";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    initializeMoney,
-    loading,
-    error,
-  };
+      return response.json();
+    },
+  });
 }
 
 export function useTransactions(filters?: {
@@ -313,13 +255,9 @@ export function useTransactions(filters?: {
   limit?: number;
   offset?: number;
 }) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
+  return useQuery({
+    queryKey: ["money", "transactions", filters],
+    queryFn: async () => {
       const params = new URLSearchParams();
       
       if (filters?.account_id) params.append("account_id", filters.account_id);
@@ -333,85 +271,111 @@ export function useTransactions(filters?: {
       const url = `/api/money/transactions${params.toString() ? `?${params.toString()}` : ""}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch transactions");
-      const data = await response.json();
-      setTransactions(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json() as Promise<Transaction[]>;
+    },
+    staleTime: 1000 * 60 * 3, // 3 minutes - transactions should be relatively fresh
+    gcTime: 1000 * 60 * 15, // 15 minutes cache
+    refetchOnWindowFocus: false,
+  });
+}
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [JSON.stringify(filters)]);
+export function useCreateTransaction() {
+  const queryClient = useQueryClient();
 
-  const createTransaction = async (transactionData: {
-    account_id: string;
-    category_id?: string;
-    type: "income" | "expense" | "transfer";
-    amount: number;
-    description: string;
-    date: string;
-    tags?: string[];
-    notes?: string;
-    is_recurring?: boolean;
-    recurring_frequency?: string;
-    recurring_end_date?: string;
-  }) => {
-    try {
+  return useMutation({
+    mutationFn: async (transactionData: {
+      account_id: string;
+      category_id?: string;
+      type: "income" | "expense" | "transfer";
+      amount: number;
+      description: string;
+      date: string;
+      tags?: string[];
+      notes?: string;
+      is_recurring?: boolean;
+      recurring_frequency?: string;
+      recurring_end_date?: string;
+    }) => {
       const response = await fetch("/api/money/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transactionData),
       });
       if (!response.ok) throw new Error("Failed to create transaction");
-      await fetchTransactions();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create transaction");
-      return false;
-    }
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "monthly-spending"] });
+    },
+  });
+}
 
-  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
-    try {
+export function useUpdateTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Transaction> }) => {
       const response = await fetch(`/api/money/transactions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
       if (!response.ok) throw new Error("Failed to update transaction");
-      await fetchTransactions();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update transaction");
-      return false;
-    }
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "monthly-spending"] });
+    },
+  });
+}
 
-  const deleteTransaction = async (id: string) => {
-    try {
+export function useDeleteTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
       const response = await fetch(`/api/money/transactions/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete transaction");
-      await fetchTransactions();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete transaction");
-      return false;
-    }
-  };
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["money", "transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["money", "monthly-spending"] });
+    },
+  });
+}
 
-  return {
-    transactions,
-    loading,
-    error,
-    refetch: fetchTransactions,
-    createTransaction,
-    updateTransaction,
-    deleteTransaction,
-  };
+export function useMonthlySpending(months: number = 12) {
+  return useQuery({
+    queryKey: ["money", "monthly-spending", months],
+    queryFn: async () => {
+      const response = await fetch(`/api/money/monthly-spending?months=${months}`);
+      if (!response.ok) throw new Error("Failed to fetch monthly spending data");
+      return response.json() as Promise<Array<{
+        month_key: string;
+        year: number;
+        month_num: number;
+        month_name: string;
+        display_name: string;
+        total_expenses: number;
+        total_income: number;
+        expense_count: number;
+        income_count: number;
+        net_income: number;
+      }>>;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 15, // 15 minutes cache
+    refetchOnWindowFocus: false,
+  });
 }

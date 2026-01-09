@@ -190,7 +190,7 @@ export async function initDatabase() {
       name TEXT NOT NULL,
       type TEXT NOT NULL CHECK(type IN ('checking', 'savings', 'credit', 'investment', 'cash')),
       balance REAL DEFAULT 0,
-      currency TEXT DEFAULT 'USD',
+      currency TEXT DEFAULT 'LKR',
       is_active INTEGER DEFAULT 1,
       created_at INTEGER DEFAULT (unixepoch()),
       updated_at INTEGER DEFAULT (unixepoch()),

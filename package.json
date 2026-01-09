@@ -21,7 +21,7 @@
     "migrate:email-verification": "tsx scripts/migrate-email-verification.ts",
     "migrate:pending-users": "tsx scripts/migrate-pending-users.ts",
     "migrate:password-reset": "tsx scripts/migrate-password-reset.ts",
-    "migrate:orientation": "tsx scripts/migrate-orientation.ts",
+    "migrate:categories": "tsx scripts/migrate-categories.ts",
     "cleanup:expired-pending": "tsx scripts/cleanup-expired-pending.ts",
     "verify:existing-users": "tsx scripts/verify-existing-users.ts",
     "create:new-admin": "tsx scripts/create-new-admin.ts",

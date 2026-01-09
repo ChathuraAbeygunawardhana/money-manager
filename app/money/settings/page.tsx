@@ -60,7 +60,7 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Income</label>
-            <Input defaultValue="$4,200" />
+            <Input defaultValue="Rs.4,200" />
           </div>
           <div>
             <CustomDropdown

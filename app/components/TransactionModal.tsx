@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccounts, useCategories } from "@/lib/hooks/useMoney";
+import { useAccounts, useCategories, useCreateTransaction, useUpdateTransaction } from "@/lib/hooks/useMoney";
 import Button from "./atoms/Button";
 import Input from "./atoms/Input";
 import CustomDropdown from "./CustomDropdown";
@@ -25,11 +25,12 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, editingTr
     notes: ""
   });
   const [tagInput, setTagInput] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { accounts } = useAccounts();
-  const { categories } = useCategories(formData.type);
+  const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories(formData.type);
+  const createTransactionMutation = useCreateTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
 
   useEffect(() => {
     if (isOpen) {
@@ -67,7 +68,6 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, editingTr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     try {
@@ -94,33 +94,19 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, editingTr
         amount: parsedAmount,
       };
 
-      console.log("Submitting transaction data:", requestData);
-
-      const url = editingTransaction 
-        ? `/api/money/transactions/${editingTransaction.id}`
-        : "/api/money/transactions";
-      
-      const method = editingTransaction ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create transaction");
+      if (editingTransaction) {
+        await updateTransactionMutation.mutateAsync({
+          id: editingTransaction.id,
+          updates: requestData
+        });
+      } else {
+        await createTransactionMutation.mutateAsync(requestData);
       }
 
       onSuccess?.();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -147,6 +133,8 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, editingTr
       handleAddTag();
     }
   };
+
+  const loading = createTransactionMutation.isPending || updateTransactionMutation.isPending;
 
   if (!isOpen) return null;
 
@@ -352,7 +340,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, editingTr
               fullWidth
               disabled={loading}
             >
-              {loading ? "Adding..." : "Add Transaction"}
+              {loading ? (editingTransaction ? "Updating..." : "Adding...") : (editingTransaction ? "Update Transaction" : "Add Transaction")}
             </Button>
           </div>
         </form>
